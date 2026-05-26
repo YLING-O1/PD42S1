@@ -4,9 +4,13 @@
 
 #include "PD42S1.h"
 
+//电机旋转方向：0：正转；1：反转
 uint8_t Rotation_Dir = 0;
+//加减速度，取值范围0~200，数值越大加减速度越大（注意：0表示直接启动）
 uint8_t Acceleration = 0;
+//速度，取值范围0~6000 RPM（类型uint16_t）
 uint16_t Speed = 0;
+//绝对位置（注意51200为一圈）（类型uint32_t）
 uint32_t Absolute_Position = 0;
 
 uint8_t Command_Result_Motor_0 = 0;
@@ -211,6 +215,7 @@ void PD42S1_Call_Back(uint8_t *PD42_Motor_Rx_Buffer)
                 Command_Result_Motor_3 = PD42_Motor_Rx_Buffer[3];
             }
         break;
+        default: ;
         }
     }
 }

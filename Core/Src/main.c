@@ -21,6 +21,7 @@
 #include "dma.h"
 #include "usart.h"
 #include "gpio.h"
+#include "PD42S1.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -45,6 +46,22 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+
+extern uint8_t Rotation_Dir;
+extern uint8_t Acceleration;
+extern uint16_t Speed;
+extern uint32_t Absolute_Position;
+
+extern uint8_t Command_Result_Motor_0;
+extern uint8_t Command_Result_Motor_1;
+extern uint8_t Command_Result_Motor_2;
+extern uint8_t Command_Result_Motor_3;
+
+extern uint8_t PD42_Motor_Rx_Buffer[20];
+extern uint8_t PD42_0x01_Rx_Data[20];
+extern uint8_t PD42_0x02_Rx_Data[20];
+extern uint8_t PD42_0x03_Rx_Data[20];
+extern uint8_t PD42_0x04_Rx_Data[20];
 
 /* USER CODE END PV */
 
@@ -93,12 +110,16 @@ int main(void)
   MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
 
+  RS485_Init(&huart1, PD42S1_Call_Back);
+  Motor_Enable(&huart1, 0x01, 0x0);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    PD42S1_Absolute_Position_Mode(&huart1, 0x01, 0x0, 50, 50.0, 45.0);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

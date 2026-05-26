@@ -42,6 +42,9 @@ void Motor_Enable_Packet(uint8_t addr, uint8_t Cmd);
 void Cleared_Condition_Packet(uint8_t addr);
 
 void PD42S1_Call_Back(uint8_t *PD42_Motor_Rx_Buffer);
+
+//应用层
+
 void Set_Position_PID(UART_HandleTypeDef *huart, uint8_t addr, uint32_t KP, uint32_t KI, uint32_t KD);
 void Set_Speed_PID(UART_HandleTypeDef *huart, uint8_t addr, uint32_t KP, uint32_t KI, uint32_t KD);
 void PD42S1_Absolute_Position_Mode(UART_HandleTypeDef *huart, uint8_t addr, uint8_t rotation_dir,
