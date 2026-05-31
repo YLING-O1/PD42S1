@@ -42,17 +42,17 @@ unsigned int floatToUint(float value)
 void RS485_Init(UART_HandleTypeDef *huart, RS485_Call_Back CallBack_Function)
 {
     RS485_RX_ENABLE();
-    __HAL_UART_ENABLE_IT(huart, UART_IT_IDLE);
     HAL_UARTEx_ReceiveToIdle_DMA(huart, PD42_Motor_Rx_Buffer, 20);
+    __HAL_DMA_DISABLE_IT(huart->hdmarx, DMA_IT_HT);
     if (huart->Instance == USART1)
     {
-        __HAL_DMA_DISABLE_IT(&hdma_usart1_rx, DMA_IT_HT);
+        // __HAL_DMA_DISABLE_IT(&hdma_usart1_rx, DMA_IT_HT);
         USART1_RS485_Manage_Object.UART_Handler = huart;
         USART1_RS485_Manage_Object.CallBack_Function = CallBack_Function;
     }
     else if (huart->Instance == USART6)
     {
-        __HAL_DMA_DISABLE_IT(&hdma_usart6_rx, DMA_IT_HT);
+        // __HAL_DMA_DISABLE_IT(&hdma_usart6_rx, DMA_IT_HT);
         USART6_RS485_Manage_Object.UART_Handler = huart;
         USART6_RS485_Manage_Object.CallBack_Function = CallBack_Function;
     }
