@@ -21,11 +21,10 @@
 #include "dma.h"
 #include "usart.h"
 #include "gpio.h"
-#include "PD42S1.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "PD42S1.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -110,8 +109,12 @@ int main(void)
   MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  RS485_Init(&huart1, PD42S1_Call_Back);
-  Motor_Enable(&huart1, 0x01, 0x0);
+  RS485_Init(&huart6, PD42S1_Call_Back);
+  HAL_Delay(100);
+  Motor_Enable(&huart6, 1, 0x0);
+  HAL_Delay(100);
+  Reset_Current_Position(&huart6, 0x01);
+  HAL_Delay(100);
 
   /* USER CODE END 2 */
 
@@ -119,7 +122,12 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    PD42S1_Absolute_Position_Mode(&huart1, 0x01, 0x0, 50, 50.0, 45.0);
+    PD42S1_Absolute_Position_Mode(&huart6, 0x01, 0, 50, 50.0, 3.14/2.0);
+    HAL_Delay(1000);
+    PD42S1_Absolute_Position_Mode(&huart6, 0x01, 0, 50, 50.0, 3.14);
+    HAL_Delay(1000);
+    PD42S1_Absolute_Position_Mode(&huart6, 0x01, 1, 50, 50.0, 0.0);
+    HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

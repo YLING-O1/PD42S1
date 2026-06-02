@@ -42,7 +42,7 @@ unsigned int floatToUint(float value)
 void RS485_Init(UART_HandleTypeDef *huart, RS485_Call_Back CallBack_Function)
 {
     RS485_RX_ENABLE();
-    HAL_UARTEx_ReceiveToIdle_DMA(huart, PD42_Motor_Rx_Buffer, 20);
+    HAL_UARTEx_ReceiveToIdle_DMA(huart, PD42_Motor_Rx_Buffer, sizeof(PD42_Motor_Rx_Buffer));
     __HAL_DMA_DISABLE_IT(huart->hdmarx, DMA_IT_HT);
     if (huart->Instance == USART1)
     {
@@ -61,6 +61,7 @@ void RS485_Init(UART_HandleTypeDef *huart, RS485_Call_Back CallBack_Function)
 //发送数据至RS485总线
 void RS485_Send_Data_DMA(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size)
 {
+    while (huart->gState != HAL_UART_STATE_READY) {}
     RS485_TX_ENABLE();
     HAL_UART_Transmit_DMA(huart, pData, Size);
 }
@@ -198,21 +199,37 @@ void PD42S1_Call_Back(uint8_t *PD42_Motor_Rx_Buffer)
         case (0x01):
             {
                 Command_Result_Motor_0 = PD42_Motor_Rx_Buffer[3];
+                for (int i = 0; i < 20; i++)
+                {
+                    PD42_0x01_Rx_Data[i] = PD42_Motor_Rx_Buffer[i];
+                }
             }
         break;
         case (0x02):
             {
                 Command_Result_Motor_1 = PD42_Motor_Rx_Buffer[3];
+                for (int i = 0; i < 20; i++)
+                {
+                    PD42_0x02_Rx_Data[i] = PD42_Motor_Rx_Buffer[i];
+                }
             }
         break;
         case (0x03):
             {
                 Command_Result_Motor_2 = PD42_Motor_Rx_Buffer[3];
+                for (int i = 0; i < 20; i++)
+                {
+                    PD42_0x03_Rx_Data[i] = PD42_Motor_Rx_Buffer[i];
+                }
             }
         break;
         case (0x04):
             {
                 Command_Result_Motor_3 = PD42_Motor_Rx_Buffer[3];
+                for (int i = 0; i < 20; i++)
+                {
+                    PD42_0x04_Rx_Data[i] = PD42_Motor_Rx_Buffer[i];
+                }
             }
         break;
         default: ;
@@ -240,8 +257,6 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
         {
             USART1_RS485_Manage_Object.CallBack_Function(PD42_Motor_Rx_Buffer);
         }
-        HAL_UARTEx_ReceiveToIdle_DMA(huart, PD42_Motor_Rx_Buffer, sizeof(PD42_Motor_Rx_Buffer));
-        __HAL_DMA_DISABLE_IT(&hdma_usart1_rx, DMA_IT_HT);
     }
     else if (huart->Instance == USART6)
     {
@@ -249,44 +264,9 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
         {
             USART6_RS485_Manage_Object.CallBack_Function(PD42_Motor_Rx_Buffer);
         }
-        HAL_UARTEx_ReceiveToIdle_DMA(huart, PD42_Motor_Rx_Buffer, sizeof(PD42_Motor_Rx_Buffer));
-        __HAL_DMA_DISABLE_IT(&hdma_usart6_rx, DMA_IT_HT);
     }
-    switch (PD42_Motor_Rx_Buffer[1])
-    {
-        case (0x01):
-        {
-            for (int i = 0; i < 20; i++)
-            {
-                PD42_0x01_Rx_Data[i] = PD42_Motor_Rx_Buffer[i];
-            }
-        }
-        break;
-        case (0x02):
-        {
-            for (int i = 0; i < 20; i++)
-            {
-                PD42_0x02_Rx_Data[i] = PD42_Motor_Rx_Buffer[i];
-            }
-        }
-        break;
-        case (0x03):
-        {
-            for (int i = 0; i < 20; i++)
-            {
-                PD42_0x03_Rx_Data[i] = PD42_Motor_Rx_Buffer[i];
-            }
-        }
-        break;
-        case (0x04):
-        {
-            for (int i = 0; i < 20; i++)
-            {
-                PD42_0x04_Rx_Data[i] = PD42_Motor_Rx_Buffer[i];
-            }
-        }
-        break;
-    }
+    HAL_UARTEx_ReceiveToIdle_DMA(huart, PD42_Motor_Rx_Buffer, sizeof(PD42_Motor_Rx_Buffer));
+    __HAL_DMA_DISABLE_IT(huart->hdmarx, DMA_IT_HT);
 }
 
 //设置位置环PID参数
@@ -303,7 +283,16 @@ void Set_Speed_PID(UART_HandleTypeDef *huart, uint8_t addr, uint32_t KP, uint32_
     RS485_Send_Data_DMA(huart, RS485_Tx_Data_Speed_PID, 17);
 }
 
-//绝对位置控制
+/**
+ * @brief 绝对位置模式控制函数
+ *
+ * @param huart 串口句柄
+ * @param addr 舵机地址
+ * @param rotation_dir 旋转方向，0：正转；1：反转
+ * @param acceleration 加减速度，取值范围0~200，数值越大加减速度越大（注意：0表示直接启动）
+ * @param Omega 速度，取值范围0~6000 RPM（类型uint16_t）
+ * @param Angle 绝对位置（注意51200为一圈）（类型uint32_t）
+ */
 void PD42S1_Absolute_Position_Mode(UART_HandleTypeDef *huart, uint8_t addr, uint8_t rotation_dir,
                                    uint8_t acceleration, float Omega, float Angle)
 {
